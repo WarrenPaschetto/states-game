@@ -23,10 +23,11 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	// leaderboard := db.New(dbConn)
+	leaderboard := db.New(dbConn)
 
 	r := mux.NewRouter()
 
 	r.HandleFunc("/states", handlers.GetStates).Methods("GET")
+	r.HandleFunc("/leaderboard", handlers.GetLeaderboard(leaderboard)).Methods("GET")
 
 }

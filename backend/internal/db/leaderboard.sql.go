@@ -39,14 +39,38 @@ func (q *Queries) InsertNewScore(ctx context.Context, arg InsertNewScoreParams) 
 	return err
 }
 
-const organizeTopTenList = `-- name: OrganizeTopTenList :exec
+const organizeTopTenList = `-- name: OrganizeTopTenList :many
 SELECT id, user_name, score, timer, created_at
 FROM leaderboard
 ORDER BY score DESC, timer ASC, created_at ASC
 LIMIT 10
 `
 
-func (q *Queries) OrganizeTopTenList(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, organizeTopTenList)
-	return err
+func (q *Queries) OrganizeTopTenList(ctx context.Context) ([]Leaderboard, error) {
+	rows, err := q.db.QueryContext(ctx, organizeTopTenList)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Leaderboard
+	for rows.Next() {
+		var i Leaderboard
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserName,
+			&i.Score,
+			&i.Timer,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
