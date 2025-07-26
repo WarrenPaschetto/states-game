@@ -3,9 +3,14 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/WarrenPaschetto/states-game/internal/db"
 	"github.com/WarrenPaschetto/states-game/internal/handlers"
+	"github.com/WarrenPaschetto/states-game/internal/middleware"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -25,9 +30,37 @@ func main() {
 
 	leaderboard := db.New(dbConn)
 
+	// Handlers
 	r := mux.NewRouter()
 
 	r.HandleFunc("/states", handlers.GetStates).Methods("GET")
 	r.HandleFunc("/leaderboard", handlers.GetLeaderboard(leaderboard)).Methods("GET")
+	r.HandleFunc("/leaderboard", handlers.PostNewHighScore(leaderboard)).Methods("POST")
 
+	// Wrap router in CORS AFTER all routes
+	handlerWithCORS := middleware.CORS(
+		func(origin string) bool {
+			if origin == "http://localhost:3000" {
+				return true
+			}
+			// Allow any vercel preview URL
+			return strings.HasSuffix(origin, ".vercel.app")
+		},
+	)(r)
+
+	// Serve
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	srv := &http.Server{
+		Addr:         ":" + port,
+		Handler:      handlerWithCORS,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+	}
+
+	log.Printf("Listening on port %s…\n", port)
+	log.Fatal(srv.ListenAndServe())
 }
