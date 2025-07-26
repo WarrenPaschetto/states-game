@@ -1,0 +1,38 @@
+# ---------------------
+# Global ignores
+# ---------------------
+.DS_Store
+.env*
+*.pem
+*.tsbuildinfo
+*.log
+.vscode/
+.idea/
+
+# ---------------------
+# Frontend (Next.js)
+# ---------------------
+/frontend/node_modules
+/frontend/.pnp
+/frontend/.next
+/frontend/out
+/frontend/build
+/frontend/.vercel
+/frontend/coverage
+/frontend/next-env.d.ts
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/.pnpm-debug.log*
+
+# ---------------------
+# Backend (Go)
+# ---------------------
+/backend/bin
+/backend/.DS_Store
+
+# ---------------------
+# Ignore system files
+# ---------------------
+*.swp
+*.swo
