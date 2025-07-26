@@ -16,6 +16,6 @@ func GetStates(w http.ResponseWriter, r *http.Request) {
 		"Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
 	}
 
-	w.Header().Set("Content_Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(states)
 }
