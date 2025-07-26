@@ -29,22 +29,18 @@ export default function LeaderboardTable({ data }: Props) {
                         <th className="px-4 py-3">Rank</th>
                         <th className="px-4 py-3">Name</th>
                         <th className="px-4 py-3">Score</th>
-                        <th className="px-4 py-3">Time</th>
+                        <th className="px-4 py-3">Time (s)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((entry, index) => {
-                        console.log("Key for row:", entry.ID, entry);
-
-                        return (
-                            <tr key={entry.ID} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                <td className="px-4 py-2 font-medium text-gray-700">{index + 1}</td>
-                                <td className="px-4 py-2">{entry.UserName}</td>
-                                <td className="px-4 py-2">{entry.Score}</td>
-                                <td className="px-4 py-2">{entry.Timer} seconds</td>
-                            </tr>
-                        );
-                    })}
+                    {data.map((entry, index) => (
+                        <tr key={entry.ID} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="px-4 py-2 font-medium text-gray-700">{index + 1}</td>
+                            <td className="px-4 py-2">{entry.UserName}</td>
+                            <td className="px-4 py-2">{entry.Score}</td>
+                            <td className="px-4 py-2">{entry.Timer} seconds</td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>
