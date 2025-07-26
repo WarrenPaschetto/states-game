@@ -33,9 +33,9 @@ func main() {
 	// Handlers
 	r := mux.NewRouter()
 
-	r.HandleFunc("/states", handlers.GetStates).Methods("GET")
-	r.HandleFunc("/leaderboard", handlers.GetLeaderboard(leaderboard)).Methods("GET")
-	r.HandleFunc("/leaderboard", handlers.PostNewHighScore(leaderboard)).Methods("POST")
+	r.HandleFunc("/api/states", handlers.GetStates).Methods("GET")
+	r.HandleFunc("/api/leaderboard", handlers.GetLeaderboard(leaderboard)).Methods("GET")
+	r.HandleFunc("/api/leaderboard", handlers.PostNewHighScore(leaderboard)).Methods("POST")
 
 	// Wrap router in CORS AFTER all routes
 	handlerWithCORS := middleware.CORS(

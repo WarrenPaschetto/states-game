@@ -17,7 +17,7 @@ func ConnectDB(ctx context.Context) (*sql.DB, error) {
 		return nil, fmt.Errorf("DATABASE_URL is not set")
 	}
 
-	db, err := sql.Open("pgx", url+"&prefer_simple_protocol=true")
+	db, err := sql.Open("pgx", url)
 	if err != nil {
 		return nil, fmt.Errorf("sql.Open: %w", err)
 	}
