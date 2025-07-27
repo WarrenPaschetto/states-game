@@ -4,23 +4,27 @@ import { useEffect, useState } from 'react'
 
 interface TimerProps {
     onTimeUp: () => void
+    startTime: boolean
+    stopTime: boolean
 }
 
-const Timer = ({ onTimeUp }: TimerProps) => {
+const Timer = ({ onTimeUp, startTime, stopTime }: TimerProps) => {
     const [timeLeft, setTimeLeft] = useState(180)
 
     useEffect(() => {
-        if (timeLeft === 0) {
+        if (timeLeft === 0 || stopTime === true) {
             onTimeUp()
             return
         }
 
-        const timerId = setInterval(() => {
-            setTimeLeft(prev => prev - 1)
-        }, 1000)
+        if (startTime === true) {
+            const timerId = setInterval(() => {
+                setTimeLeft(prev => prev - 1)
+            }, 1000)
 
-        return () => clearInterval(timerId)
-    }, [timeLeft, onTimeUp])
+            return () => clearInterval(timerId)
+        }
+    }, [timeLeft, onTimeUp, startTime, stopTime])
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60)

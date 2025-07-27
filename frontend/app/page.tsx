@@ -15,9 +15,19 @@ type LeaderboardEntry = {
 export default function Home() {
   const [data, setData] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [start, setStart] = useState(false)
+  const [stop, setStop] = useState(false)
 
   const handleTimeUp = () => {
     alert("Time is up!")
+  }
+
+  const handleStartTime = () => {
+    setStart(true)
+  }
+
+  const handleStopTime = () => {
+    setStop(true)
   }
 
   useEffect(() => {
@@ -35,7 +45,19 @@ export default function Home() {
         Test how well you know the United States. Enter as many state names as you can in 60 seconds!
       </p>
       <div className="overflow-x-auto m-6 flex justify-center">
-        <Timer onTimeUp={handleTimeUp} />
+        <Timer onTimeUp={handleTimeUp} startTime={start} stopTime={stop} />
+      </div >
+      <div className="overflow-x-auto m-6 flex justify-center">
+        <button
+          className={`mr-10 text-xl text-center shadow-lg rounded-lg w-30 h-1/2 ${start ? `bg-green-900 text-gray-700` : `bg-green-600 text-white`}`}
+          onClick={handleStartTime}
+          disabled={start}
+        >Start</button>
+        <button
+          className={`ml-10 text-xl text-center shadow-lg rounded-lg w-30 h-1/2 ${stop ? `bg-red-900 text-gray-700` : `bg-red-600 text-white`}`}
+          onClick={handleStopTime}
+          disabled={stop}
+        >End</button>
       </div>
 
       <h2 className="text-center text-xl font-semibold mb-4">🏆 Top 10 Scores</h2>
