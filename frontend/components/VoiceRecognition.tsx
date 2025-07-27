@@ -50,8 +50,9 @@ export default function VoiceRecognition({ onResult, onError, disabled = false }
             onError?.(event.error)
         }
 
+
         recognition.onend = () => {
-            console.log('🎤 Recognition ended')
+            console.log('Recognition ended -- restarting')
         }
 
         try {

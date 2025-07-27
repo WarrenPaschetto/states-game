@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+
+import Image from "next/image";
+import { useEffect, useRef, useState } from 'react';
 import VoiceRecognition from '@/components/VoiceRecognition';
 
 const states = [
@@ -14,6 +16,11 @@ const states = [
     'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
 ];
 
+type Props = {
+    startCards: boolean
+    disabled: boolean
+}
+
 function shuffleArray<T>(array: T[]): T[] {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -23,7 +30,8 @@ function shuffleArray<T>(array: T[]): T[] {
     return arr;
 }
 
-export default function Flashcard() {
+export default function Flashcard({ startCards = false, disabled = false }: Props) {
+
     const [shuffledStates] = useState(() => shuffleArray(states));
     const [index, setIndex] = useState(0);
     const [score, setScore] = useState(0);
@@ -31,34 +39,64 @@ export default function Flashcard() {
     const [lastSpoken, setLastSpoken] = useState('');
     const [gameOver, setGameOver] = useState(false);
 
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const currentState = shuffledStates[index];
 
+    const nextCard = () => {
+        if (index + 1 < shuffledStates.length) {
+            setIndex(index + 1);
+            setShowAnswer(false);
+            setLastSpoken('');
+        } else {
+            setGameOver(true);
+        }
+    };
+
     const handleResult = (spoken: string) => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
         setLastSpoken(spoken);
         const isCorrect = spoken.toLowerCase().includes(currentState.toLowerCase());
+
+        // If answer is correct increase the score by 1
         if (isCorrect) {
             setScore((prev) => prev + 1);
         }
+
         setShowAnswer(true);
-        setTimeout(() => {
-            if (index + 1 < shuffledStates.length) {
-                setIndex(index + 1);
-                setShowAnswer(false);
-            } else {
-                setGameOver(true);
-            }
-        }, 2000);
+
+        setTimeout(nextCard, 1000);
     };
+
+    useEffect(() => {
+        // Set a 5-second timer for no response
+        if (!showAnswer && !gameOver) {
+            timeoutRef.current = setTimeout(() => {
+                setShowAnswer(true);
+                setTimeout(nextCard, 2000); // show "Incorrect" for 2 seconds before next
+            }, 5000);
+        }
+
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, [index, showAnswer, gameOver]);
+
+    if (!startCards || disabled) return null;
 
     return (
         <div className="max-w-xl mx-auto text-center p-6">
-            <h1 className="text-3xl font-bold mb-4">🗣 Flashcard States Game</h1>
-
             {!gameOver && (
                 <>
                     <p className="text-lg mb-2">Say the name of the selected state!</p>
-                    <div className="border-2 border-gray-400 rounded-lg p-6 text-2xl font-bold my-4">
-                        {currentState}
+                    <div className="border-2 border-gray-400 rounded-lg p-6 my-4">
+                        <Image
+                            src={`/states/${currentState.toLowerCase().replace(/\s+/g, '')}.png`}
+                            alt={currentState}
+                            width={300}
+                            height={200}
+                            className="mx-auto rounded-md max-h-20 max-w-20"
+                        />
                     </div>
 
                     {showAnswer ? (
