@@ -9,7 +9,7 @@ interface TimerProps {
 }
 
 const Timer = ({ onTimeUp, startTime, stopTime }: TimerProps) => {
-    const [timeLeft, setTimeLeft] = useState(180)
+    const [timeLeft, setTimeLeft] = useState(240)
 
     useEffect(() => {
         if (timeLeft === 0 || stopTime === true) {

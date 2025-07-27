@@ -42,8 +42,15 @@ export default function Home() {
   return (
     <main className="max-w-3xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-center mb-6">US States Game</h1>
+      <Image
+        src="/us-flag.gif"
+        alt="eagle with flag"
+        width={900}
+        height={500}
+        unoptimized
+      />
       <p className="text-center text-gray-600 mb-8">
-        Test how well you know the United States. Enter as many state names as you can in 60 seconds!
+        Test how well you know the United States. Enter as many state names as you can in 4 minutes!
       </p>
       <div className="overflow-x-auto m-6 flex justify-center">
         <Timer onTimeUp={handleTimeUp} startTime={start} stopTime={stop} />
