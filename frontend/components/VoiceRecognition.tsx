@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 'use client'
-
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 declare global {
     interface Window {
@@ -26,45 +25,99 @@ type SpeechRecognitionErrorEvent = Event & {
 }
 
 export default function VoiceRecognition({ onResult, onError, disabled = false }: Props) {
+    const recognitionRef = useRef<any>(null)
+    const isListening = useRef(false)
+
     useEffect(() => {
-        if (disabled) return
+        console.log('VoiceRecognition mounted')
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-
         if (!SpeechRecognition) {
             onError?.('SpeechRecognition not supported.')
             return
         }
 
-        const recognition = new SpeechRecognition()
-        recognition.lang = 'en-US'
-        recognition.interimResults = false
-        recognition.maxAlternatives = 1
+        const initRecognition = async () => {
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true })
+                console.log("✅ Mic permission granted")
 
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-            const transcript = event.results[0][0].transcript.trim().toLowerCase()
-            onResult(transcript)
+                if (!recognitionRef.current) {
+                    const recognition = new SpeechRecognition()
+                    recognition.lang = 'en-US'
+                    recognition.interimResults = false
+                    recognition.maxAlternatives = 1
+
+                    recognition.onresult = (event: any) => {
+                        const transcript = event.results[0][0].transcript.trim().toLowerCase()
+                        console.log("👂 Heard:", transcript)
+                        onResult(transcript)
+                    }
+
+                    recognition.onerror = (event: any) => {
+                        console.warn("Recognition error:", event.error)
+                        onError?.(event.error)
+                    }
+
+                    recognition.onend = () => {
+                        console.log("🎤 Recognition ended")
+                        if (!disabled) {
+                            try {
+                                recognition.start()
+                                console.log("🔁 Restarted recognition")
+                            } catch (e) {
+                                console.warn("⚠️ Restart error:", e)
+                            }
+                        }
+                    }
+
+                    recognitionRef.current = recognition
+                }
+
+                if (!disabled && !isListening.current) {
+                    try {
+                        recognitionRef.current.start()
+                        isListening.current = true
+                        console.log("🎙️ Recognition started")
+                    } catch (e) {
+                        console.warn("⚠️ Start failed:", e)
+                    }
+                }
+
+            } catch (err) {
+                console.error("❌ Mic access error:", err)
+                onError?.("Mic access error")
+            }
         }
 
-        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-            onError?.(event.error)
-        }
-
-
-        recognition.onend = () => {
-            console.log('Recognition ended -- restarting')
-        }
-
-        try {
-            recognition.start()
-        } catch (e) {
-            console.warn('Recognition start failed:', e)
-        }
+        initRecognition()
 
         return () => {
-            recognition.abort()
+            if (recognitionRef.current) {
+                recognitionRef.current.abort()
+                isListening.current = false
+                console.log("🛑 Recognition aborted on unmount")
+            }
         }
-    }, [disabled, onResult, onError])
+    }, []) // empty dependency ensures one-time setup only
+
+    useEffect(() => {
+        if (recognitionRef.current) {
+            if (disabled && isListening.current) {
+                recognitionRef.current.abort()
+                isListening.current = false
+                console.log("🚫 Recognition paused")
+            } else if (!disabled && !isListening.current) {
+                try {
+                    recognitionRef.current.start()
+                    isListening.current = true
+                    console.log("▶️ Recognition resumed")
+                } catch (e) {
+                    console.warn("⚠️ Resume failed:", e)
+                }
+            }
+        }
+    }, [disabled])
 
     return null
 }
