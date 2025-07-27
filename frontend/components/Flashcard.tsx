@@ -31,8 +31,6 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export default function Flashcard({ startCards = false, disabled = false }: Props) {
-    if (!startCards) return;
-    if (disabled) return;
 
     const [shuffledStates] = useState(() => shuffleArray(states));
     const [index, setIndex] = useState(0);
@@ -84,6 +82,7 @@ export default function Flashcard({ startCards = false, disabled = false }: Prop
         };
     }, [index, showAnswer, gameOver]);
 
+    if (!startCards || disabled) return null;
 
     return (
         <div className="max-w-xl mx-auto text-center p-6">
