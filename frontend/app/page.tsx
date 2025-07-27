@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import LeaderboardTable from "@/components/LeaderboardTable";
+import Timer from "@/components/Timer";
 
 type LeaderboardEntry = {
   ID: string
@@ -14,6 +15,10 @@ type LeaderboardEntry = {
 export default function Home() {
   const [data, setData] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
+
+  const handleTimeUp = () => {
+    alert("Time is up!")
+  }
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard`)
@@ -29,6 +34,9 @@ export default function Home() {
       <p className="text-center text-gray-600 mb-8">
         Test how well you know the United States. Enter as many state names as you can in 60 seconds!
       </p>
+      <div className="overflow-x-auto m-6 flex justify-center">
+        <Timer onTimeUp={handleTimeUp} />
+      </div>
 
       <h2 className="text-center text-xl font-semibold mb-4">🏆 Top 10 Scores</h2>
 
