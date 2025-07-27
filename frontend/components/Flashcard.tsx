@@ -19,6 +19,8 @@ const states = [
 type Props = {
     startCards: boolean
     disabled: boolean
+    timeLeft: number
+    onGameOver: (score: number, time: number) => void
 }
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -30,7 +32,7 @@ function shuffleArray<T>(array: T[]): T[] {
     return arr;
 }
 
-export default function Flashcard({ startCards = false, disabled = false }: Props) {
+export default function Flashcard({ startCards = false, disabled = false, timeLeft = 0, onGameOver }: Props) {
 
     const [shuffledStates] = useState(() => shuffleArray(states));
     const [index, setIndex] = useState(0);
@@ -43,12 +45,14 @@ export default function Flashcard({ startCards = false, disabled = false }: Prop
     const currentState = shuffledStates[index];
 
     const nextCard = () => {
+
         if (index + 1 < shuffledStates.length) {
             setIndex(index + 1);
             setShowAnswer(false);
             setLastSpoken('');
         } else {
             setGameOver(true);
+            onGameOver(score, 240 - timeLeft); // use timeLeft passed from Home
         }
     };
 
@@ -70,7 +74,7 @@ export default function Flashcard({ startCards = false, disabled = false }: Prop
 
     useEffect(() => {
         // Set a 5-second timer for no response
-        if (!showAnswer && !gameOver) {
+        if (!showAnswer && !gameOver && startCards && !disabled) {
             timeoutRef.current = setTimeout(() => {
                 setShowAnswer(true);
                 setTimeout(nextCard, 2000); // show "Incorrect" for 2 seconds before next
@@ -80,12 +84,17 @@ export default function Flashcard({ startCards = false, disabled = false }: Prop
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [index, showAnswer, gameOver]);
+    }, [index, showAnswer, gameOver, startCards, disabled]);
 
     if (!startCards || disabled) return null;
 
     return (
         <div className="max-w-xl mx-auto text-center p-6">
+            {/* Voice recognition is always mounted but disabled conditionally */}
+            <VoiceRecognition
+                onResult={handleResult}
+                disabled={!startCards || disabled || showAnswer || gameOver}
+            />
             {!gameOver && (
                 <>
                     <p className="text-lg mb-2">Say the name of the selected state!</p>
@@ -104,7 +113,7 @@ export default function Flashcard({ startCards = false, disabled = false }: Prop
                             You said: <strong>{lastSpoken}</strong> — {lastSpoken.toLowerCase().includes(currentState.toLowerCase()) ? '✅ Correct!' : '❌ Incorrect'}
                         </p>
                     ) : (
-                        <VoiceRecognition onResult={handleResult} />
+                        <p className="text-gray-600 italic">Listening...</p>
                     )}
 
                     <p className="mt-6 text-lg">Score: <strong>{score}</strong></p>

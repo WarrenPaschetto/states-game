@@ -6,10 +6,11 @@ interface TimerProps {
     onTimeUp: () => void
     startTime: boolean
     stopTime: boolean
+    timeLeft: number
+    setTimeLeft: React.Dispatch<React.SetStateAction<number>>
 }
 
-const Timer = ({ onTimeUp, startTime, stopTime }: TimerProps) => {
-    const [timeLeft, setTimeLeft] = useState(240)
+const Timer = ({ onTimeUp, startTime, stopTime, timeLeft, setTimeLeft }: TimerProps) => {
 
     useEffect(() => {
         if (timeLeft === 0 || stopTime === true) {
