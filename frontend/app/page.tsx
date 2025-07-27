@@ -37,6 +37,12 @@ export default function Home() {
     setStop(true)
   }
 
+  const isTopTen = (score: number, time: number) => {
+    if (data.length < 10) return true;
+    const worstScore = data[9]
+    return score > worstScore.Score || (score === worstScore.Score && time < worstScore.Timer)
+  }
+
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard`)
       .then((res) => res.json())
@@ -44,12 +50,6 @@ export default function Home() {
       .catch((err) => console.error('Error loading leaderboard:', err))
       .finally(() => setLoading(false))
   }, [])
-
-  const isTopTen = (score: number, time: number) => {
-    if (data.length < 10) return true;
-    const worstScore = data[9]
-    return score > worstScore.Score || (score === worstScore.Score && time < worstScore.Timer)
-  }
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -63,7 +63,7 @@ export default function Home() {
         unoptimized
       />
       <p className="text-center text-gray-600 mb-8">
-        Test how well you know the United States. Enter as many state names as you can in 4 minutes!
+        Test how well you know the United States. Speak as many matching state names as you can in 4 minutes!
       </p>
       <div className="overflow-x-auto m-6 flex justify-center">
         <Timer
@@ -125,9 +125,9 @@ export default function Home() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/JSON' },
                 body: JSON.stringify({
-                  userName: playerName,
-                  score: finalScore,
-                  timer: finalTime,
+                  UserName: { playerName },
+                  Score: { finalScore },
+                  Timer: { finalTime },
                 }),
               }).then(() => {
                 setShowNameInput(false) // hide the input again
