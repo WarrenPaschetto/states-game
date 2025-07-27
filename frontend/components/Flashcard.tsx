@@ -113,7 +113,7 @@ export default function Flashcard({ startCards = false, disabled = false, timeLe
                             You said: <strong>{lastSpoken}</strong> — {lastSpoken.toLowerCase().includes(currentState.toLowerCase()) ? '✅ Correct!' : '❌ Incorrect'}
                         </p>
                     ) : (
-                        <p className="text-gray-600 italic">Listening...</p>
+                        <></>
                     )}
 
                     <p className="mt-6 text-lg">Score: <strong>{score}</strong></p>

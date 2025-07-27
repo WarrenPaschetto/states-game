@@ -16,108 +16,102 @@ type Props = {
     disabled?: boolean
 }
 
-type SpeechRecognitionEvent = Event & {
-    readonly results: SpeechRecognitionResultList
-}
-
-type SpeechRecognitionErrorEvent = Event & {
-    error: string
-}
-
 export default function VoiceRecognition({ onResult, onError, disabled = false }: Props) {
-    const recognitionRef = useRef<any>(null)
-    const isListening = useRef(false)
+    const recognitionRef = useRef<any>(null);
+    const isListening = useRef(false);
+    const isMounted = useRef(true); // ✅ tracks unmount
 
     useEffect(() => {
-        console.log('VoiceRecognition mounted')
+        console.log('VoiceRecognition mounted');
+        isMounted.current = true;
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            onError?.('SpeechRecognition not supported.')
-            return
+            onError?.('SpeechRecognition not supported.');
+            return;
         }
 
         const initRecognition = async () => {
             try {
-                await navigator.mediaDevices.getUserMedia({ audio: true })
-                console.log("✅ Mic permission granted")
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log("✅ Mic permission granted");
 
                 if (!recognitionRef.current) {
-                    const recognition = new SpeechRecognition()
-                    recognition.lang = 'en-US'
-                    recognition.interimResults = false
-                    recognition.maxAlternatives = 1
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'en-US';
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 1;
 
                     recognition.onresult = (event: any) => {
-                        const transcript = event.results[0][0].transcript.trim().toLowerCase()
-                        console.log("👂 Heard:", transcript)
-                        onResult(transcript)
-                    }
+                        const transcript = event.results[0][0].transcript.trim().toLowerCase();
+                        console.log("👂 Heard:", transcript);
+                        onResult(transcript);
+                    };
 
                     recognition.onerror = (event: any) => {
-                        console.warn("Recognition error:", event.error)
-                        onError?.(event.error)
-                    }
+                        console.warn("Recognition error:", event.error);
+                        onError?.(event.error);
+                    };
 
                     recognition.onend = () => {
-                        console.log("🎤 Recognition ended")
-                        if (!disabled) {
+                        console.log("🎤 Recognition ended");
+                        if (!disabled && isMounted.current) {
                             try {
-                                recognition.start()
-                                console.log("🔁 Restarted recognition")
+                                recognition.start();
+                                console.log("🔁 Restarted recognition");
                             } catch (e) {
-                                console.warn("⚠️ Restart error:", e)
+                                console.warn("⚠️ Restart error:", e);
                             }
+                        } else {
+                            console.log("🛑 Recognition ended and not restarting");
                         }
-                    }
+                    };
 
-                    recognitionRef.current = recognition
+                    recognitionRef.current = recognition;
                 }
 
                 if (!disabled && !isListening.current) {
-                    try {
-                        recognitionRef.current.start()
-                        isListening.current = true
-                        console.log("🎙️ Recognition started")
-                    } catch (e) {
-                        console.warn("⚠️ Start failed:", e)
-                    }
+                    recognitionRef.current.start();
+                    isListening.current = true;
+                    console.log("🎙️ Recognition started");
                 }
 
             } catch (err) {
-                console.error("❌ Mic access error:", err)
-                onError?.("Mic access error")
+                console.error("❌ Mic access error:", err);
+                onError?.("Mic access error");
             }
-        }
+        };
 
-        initRecognition()
+        initRecognition();
 
         return () => {
+            isMounted.current = false; // ✅ prevents future restarts
             if (recognitionRef.current) {
-                recognitionRef.current.abort()
-                isListening.current = false
-                console.log("🛑 Recognition aborted on unmount")
+                recognitionRef.current.onend = null; // ✅ prevent restart loop
+                recognitionRef.current.abort();
+                isListening.current = false;
+                console.log("🛑 Recognition aborted on unmount");
             }
-        }
-    }, []) // empty dependency ensures one-time setup only
+        };
+    }, []);
 
     useEffect(() => {
         if (recognitionRef.current) {
             if (disabled && isListening.current) {
-                recognitionRef.current.abort()
-                isListening.current = false
-                console.log("🚫 Recognition paused")
+                recognitionRef.current.abort();
+                isListening.current = false;
+                console.log("🚫 Recognition paused");
             } else if (!disabled && !isListening.current) {
                 try {
-                    recognitionRef.current.start()
-                    isListening.current = true
-                    console.log("▶️ Recognition resumed")
+                    recognitionRef.current.start();
+                    isListening.current = true;
+                    console.log("▶️ Recognition resumed");
                 } catch (e) {
-                    console.warn("⚠️ Resume failed:", e)
+                    console.warn("⚠️ Resume failed:", e);
                 }
             }
         }
-    }, [disabled])
+    }, [disabled]);
 
-    return null
+    return null;
 }
