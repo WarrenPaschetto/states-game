@@ -57,14 +57,22 @@ I did use AI to help with many parts of this, especially on the front-end. It wa
 
 ## 🚀 Getting Started
 
-### 1. Clone the Repository
+### 1. Set Up Supabase
+1. Log in to Supabase and create a new project.
+2. In the dashboard, go to Settings → Database → Connection string.
+3. Copy the Connection string (libpq) URL, for example:
+   ```
+   postgresql://postgres:<PASSWORD>@db.<project>.supabase.co:5432/postgres?sslmode=require
+   ```
+
+### 2. Clone the Repository
 
 ```bash
 git clone https://github.com/<yourusername>/states-game.git
 cd states-game
 ```
 
-### 2. Install Dependencies
+### 3. Install Dependencies
 
 ```bash
 cd frontend
@@ -73,20 +81,62 @@ npm install
 yarn install
 ```
 
-### 3. Create Environment File
+### 4. Create Environment File
 Create a .env.local file in /frontend with:
 ```bash
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
 ```
 
-### 4. Run the Backend Server from /backend
+### 5. Set Up Backend
+1. Create `.env` in `/backend`:
+   ```env
+   DATABASE_URL=postgresql://...    # Your Supabase connection string
+   JWT_SECRET=supersecretvalue
+   PORT=8080
+   ```
+2. Install the Goose CLI for managing migrations:
+
+   ```
+   # via Go modules
+   go install github.com/pressly/goose/v3/cmd/goose@latest
+
+   # or on macOS using Homebrew
+   brew install goose
+   ```
+   Verify installation:
+   ```
+   goose --version
+   ```
+3. Run migrations:
+   Go into the backend directory:
+   ```
+   cd backend
+   ```
+   
+   In your shell, export your DATABASE_URL:
+   ```
+   export DATABASE_URL=postgresql://postgres:<PASSWORD>@db.<project>.supabase.co:5432/postgres?sslmode=require
+   ```
+   
+   Apply migrations:
+   ```
+   goose -dir sql/schema postgres "$DATABASE_URL" up
+   ```
+
+   Verify the created tables:
+   ```
+   psql "&DATABASE_URL" -c '/dt'
+   ```
+
+### 6. Run the Backend Server from /backend
 
 ```bash
 cd backend
+go mod tidy
 go run ./cmd/main.go
 ```
 
-### 5. Run the Dev Server from /frontend
+### 7. Run the Dev Server from /frontend
 
 ```bash
 cd frontend
