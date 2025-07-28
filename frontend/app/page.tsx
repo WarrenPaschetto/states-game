@@ -105,9 +105,7 @@ export default function Home() {
             onGameOver={(finalScore, time) => {
               setFinalScore(finalScore);
               setFinalTime(time);
-              if (isTopTen(finalScore, time)) {
-                setShowNameInput(true);
-              }
+              setShowNameInput(true);
             }}
           />
         )}
@@ -121,7 +119,7 @@ export default function Home() {
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             className="px-4 py-2 border border-gray-400 rounded-md w-1/2 text-center"
-            disabled={start}
+            disabled={!showNameInput}
             placeholder="Your name"
             required
           />
@@ -132,7 +130,13 @@ export default function Home() {
                 alert("Please enter your name before submitting.");
                 return;
               }
-              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/highscore`, {
+
+              if (!isTopTen(finalScore, finalTime)) {
+                alert("Sorry, you didn't make the Top 10 leaderboard.");
+                return;
+              }
+
+              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/JSON' },
                 body: JSON.stringify({
@@ -141,13 +145,12 @@ export default function Home() {
                   Timer: finalTime,
                 }),
               }).then(() => {
-                setShowNameInput(false) // hide the input again
-                setPlayerName('')
-              })
-                .catch((err) => {
-                  console.error("Failed to submit score:", err)
-                  alert("Error submitting score. Try again.")
-                })
+                setShowNameInput(false);
+                setPlayerName('');
+              }).catch((err) => {
+                console.error("Failed to submit score:", err);
+                alert("Error submitting score. Try again.");
+              });
             }}
           >
             Submit
