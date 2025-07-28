@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 'use client'
+
 import { useEffect, useRef } from 'react'
 
 declare global {
@@ -19,7 +19,20 @@ type Props = {
 export default function VoiceRecognition({ onResult, onError, disabled = false }: Props) {
     const recognitionRef = useRef<any>(null);
     const isListening = useRef(false);
-    const isMounted = useRef(true); // ✅ tracks unmount
+    const isMounted = useRef(true);
+
+    const restartRecognition = () => {
+        try {
+            if (recognitionRef.current) {
+                recognitionRef.current.abort(); // Stop if running
+                recognitionRef.current.start(); // Restart cleanly
+                isListening.current = true;
+                console.log("🔁 Recognition restarted safely");
+            }
+        } catch (err) {
+            console.warn("⚠️ Safe restart failed:", err);
+        }
+    };
 
     useEffect(() => {
         console.log('VoiceRecognition mounted');
@@ -43,6 +56,7 @@ export default function VoiceRecognition({ onResult, onError, disabled = false }
                     recognition.maxAlternatives = 1;
 
                     recognition.onresult = (event: any) => {
+                        if (disabled) return;
                         const transcript = event.results[0][0].transcript.trim().toLowerCase();
                         console.log("👂 Heard:", transcript);
                         onResult(transcript);
@@ -50,18 +64,15 @@ export default function VoiceRecognition({ onResult, onError, disabled = false }
 
                     recognition.onerror = (event: any) => {
                         console.warn("Recognition error:", event.error);
+                        isListening.current = false;
                         onError?.(event.error);
                     };
 
                     recognition.onend = () => {
                         console.log("🎤 Recognition ended");
+                        isListening.current = false;
                         if (!disabled && isMounted.current) {
-                            try {
-                                recognition.start();
-                                console.log("🔁 Restarted recognition");
-                            } catch (e) {
-                                console.warn("⚠️ Restart error:", e);
-                            }
+                            restartRecognition();
                         } else {
                             console.log("🛑 Recognition ended and not restarting");
                         }
@@ -71,9 +82,7 @@ export default function VoiceRecognition({ onResult, onError, disabled = false }
                 }
 
                 if (!disabled && !isListening.current) {
-                    recognitionRef.current.start();
-                    isListening.current = true;
-                    console.log("🎙️ Recognition started");
+                    restartRecognition();
                 }
 
             } catch (err) {
@@ -85,9 +94,9 @@ export default function VoiceRecognition({ onResult, onError, disabled = false }
         initRecognition();
 
         return () => {
-            isMounted.current = false; // ✅ prevents future restarts
+            isMounted.current = false;
             if (recognitionRef.current) {
-                recognitionRef.current.onend = null; // ✅ prevent restart loop
+                recognitionRef.current.onend = null;
                 recognitionRef.current.abort();
                 isListening.current = false;
                 console.log("🛑 Recognition aborted on unmount");
@@ -96,20 +105,14 @@ export default function VoiceRecognition({ onResult, onError, disabled = false }
     }, []);
 
     useEffect(() => {
-        if (recognitionRef.current) {
-            if (disabled && isListening.current) {
-                recognitionRef.current.abort();
-                isListening.current = false;
-                console.log("🚫 Recognition paused");
-            } else if (!disabled && !isListening.current) {
-                try {
-                    recognitionRef.current.start();
-                    isListening.current = true;
-                    console.log("▶️ Recognition resumed");
-                } catch (e) {
-                    console.warn("⚠️ Resume failed:", e);
-                }
-            }
+        if (!recognitionRef.current) return;
+
+        if (disabled && isListening.current) {
+            recognitionRef.current.abort();
+            isListening.current = false;
+            console.log("🚫 Recognition paused");
+        } else if (!disabled && !isListening.current) {
+            restartRecognition();
         }
     }, [disabled]);
 

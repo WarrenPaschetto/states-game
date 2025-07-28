@@ -25,6 +25,8 @@ export default function Home() {
   const [playerName, setPlayerName] = useState('')
   const [showNameInput, setShowNameInput] = useState(false)
   const [hydrated, setHydrated] = useState(false);
+  const [score, setScore] = useState(0);
+
 
   const handleTimeUp = () => {
     setStop(true);
@@ -98,10 +100,12 @@ export default function Home() {
             startCards={start}
             disabled={stop}
             timeLeft={timeLeft}
-            onGameOver={(score, time) => {
-              setFinalScore(score);
+            score={score}
+            setScore={setScore}
+            onGameOver={(finalScore, time) => {
+              setFinalScore(finalScore);
               setFinalTime(time);
-              if (isTopTen(score, time)) {
+              if (isTopTen(finalScore, time)) {
                 setShowNameInput(true);
               }
             }}
