@@ -51,7 +51,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/leaderboard`)
       .then((res) => res.json())
       .then(setData)
       .catch((err) => console.error('Error loading leaderboard:', err))
@@ -136,7 +136,7 @@ export default function Home() {
                 return;
               }
 
-              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard`, {
+              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/leaderboard`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/JSON' },
                 body: JSON.stringify({
