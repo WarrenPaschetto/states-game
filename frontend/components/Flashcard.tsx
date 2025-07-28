@@ -2,7 +2,7 @@
 
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import VoiceRecognition from '@/components/VoiceRecognition';
 
 const states = [
@@ -17,11 +17,13 @@ const states = [
 ];
 
 type Props = {
-    startCards: boolean
-    disabled: boolean
-    timeLeft: number
-    onGameOver: (score: number, time: number) => void
-}
+    startCards: boolean;
+    disabled: boolean;
+    timeLeft: number;
+    score: number;
+    setScore: React.Dispatch<React.SetStateAction<number>>;
+    onGameOver: (score: number, time: number) => void;
+};
 
 function shuffleArray<T>(array: T[]): T[] {
     const arr = [...array];
@@ -32,59 +34,70 @@ function shuffleArray<T>(array: T[]): T[] {
     return arr;
 }
 
-export default function Flashcard({ startCards = false, disabled = false, timeLeft = 0, onGameOver }: Props) {
+export default function Flashcard({ startCards = false, disabled = false, timeLeft = 0, score, setScore, onGameOver }: Props) {
+
 
     const [shuffledStates] = useState(() => shuffleArray(states));
     const [index, setIndex] = useState(0);
-    const [score, setScore] = useState(0);
     const [showAnswer, setShowAnswer] = useState(false);
     const [lastSpoken, setLastSpoken] = useState('');
     const [gameOver, setGameOver] = useState(false);
+    const currentStateRef = useRef(shuffledStates[0]);
 
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    //const [currentState, setCurrentState] = useState(shuffledStates[0]);
+
     const currentState = shuffledStates[index];
 
     const nextCard = () => {
-
+        console.log("📦 nextCard called at index", index);
         if (index + 1 < shuffledStates.length) {
-            setIndex(index + 1);
-            setShowAnswer(false);
+            console.log("➡️ Advancing to next card");
+            setIndex(prev => prev + 1);
             setLastSpoken('');
         } else {
+            console.log("🏁 No more cards — game over");
             setGameOver(true);
-            onGameOver(score, 240 - timeLeft); // use timeLeft passed from Home
+            console.log("🎯 Final Score (ref):", score);
+            onGameOver(score, 240 - timeLeft);
         }
     };
 
+
     const handleResult = (spoken: string) => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        console.log("🗣️ handleResult:", spoken);
 
         setLastSpoken(spoken);
-        const isCorrect = spoken.toLowerCase().includes(currentState.toLowerCase());
 
-        // If answer is correct increase the score by 1
+
+        const cleanSpoken = spoken.trim().toLowerCase().replace(/[^\w\s]/g, '');
+        const cleanState = currentStateRef.current.trim().toLowerCase();
+        const isCorrect = cleanSpoken === cleanState;
+
+        console.log("✅ Cleaned:", cleanSpoken, "vs", cleanState);
+        console.log("✅ Correct?", isCorrect);
+
+
+
         if (isCorrect) {
-            setScore((prev) => prev + 1);
+            setScore(prev => {
+                const newScore = prev + 1;
+                console.log("🧮 Score updated:", newScore);
+                return newScore;
+            });
         }
 
         setShowAnswer(true);
 
-        setTimeout(nextCard, 1000);
+        setTimeout(() => {
+            setShowAnswer(false);
+            nextCard();
+        }, 1000);
     };
 
     useEffect(() => {
-        // Set a 5-second timer for no response
-        if (!showAnswer && !gameOver && startCards && !disabled) {
-            timeoutRef.current = setTimeout(() => {
-                setShowAnswer(true);
-                setTimeout(nextCard, 2000); // show "Incorrect" for 2 seconds before next
-            }, 5000);
-        }
-
-        return () => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        };
-    }, [index, showAnswer, gameOver, startCards, disabled]);
+        currentStateRef.current = shuffledStates[index];
+        console.log("🧭 index changed:", index, "→", currentStateRef.current);
+    }, [index, shuffledStates]);
 
     useEffect(() => {
         if (timeLeft <= 0 && !gameOver) {
@@ -94,14 +107,14 @@ export default function Flashcard({ startCards = false, disabled = false, timeLe
     }, [timeLeft, gameOver]);
 
 
-    //if (!startCards || disabled) return null;
+    if (!startCards || disabled) return null;
 
     return (
         <div className="max-w-xl mx-auto text-center p-6">
             {/* Voice recognition is always mounted but disabled conditionally */}
             <VoiceRecognition
                 onResult={handleResult}
-                disabled={!startCards || disabled || showAnswer || gameOver}
+                disabled={!startCards || disabled || gameOver}
             />
             {!gameOver && (
                 <>
