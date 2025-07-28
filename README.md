@@ -67,25 +67,26 @@ cd states-game
 ### 2. Install Dependencies
 
 ```bash
+cd frontend
 npm install
 # or
 yarn install
 ```
 
 ### 3. Create Environment File
-Create a .env.local file at the root with:
+Create a .env.local file in /frontend with:
 ```bash
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
 ```
 
-### 4. Run the Backend Server from Root
+### 4. Run the Backend Server from /backend
 
 ```bash
 cd backend
 go run ./cmd/main.go
 ```
 
-### 5. Run the Dev Server from Root
+### 5. Run the Dev Server from /frontend
 
 ```bash
 cd frontend
