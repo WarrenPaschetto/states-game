@@ -86,7 +86,15 @@ export default function Flashcard({ startCards = false, disabled = false, timeLe
         };
     }, [index, showAnswer, gameOver, startCards, disabled]);
 
-    if (!startCards || disabled) return null;
+    useEffect(() => {
+        if (timeLeft <= 0 && !gameOver) {
+            setGameOver(true);
+            onGameOver(score, 240); // entire 240 seconds used
+        }
+    }, [timeLeft, gameOver]);
+
+
+    //if (!startCards || disabled) return null;
 
     return (
         <div className="max-w-xl mx-auto text-center p-6">

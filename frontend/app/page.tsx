@@ -24,9 +24,10 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(240)
   const [playerName, setPlayerName] = useState('')
   const [showNameInput, setShowNameInput] = useState(false)
+  const [hydrated, setHydrated] = useState(false);
 
   const handleTimeUp = () => {
-    alert("Time is up!")
+    setStop(true);
   }
 
   const handleStartTime = () => {
@@ -42,6 +43,10 @@ export default function Home() {
     const worstScore = data[9]
     return score > worstScore.Score || (score === worstScore.Score && time < worstScore.Timer)
   }
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard`)
@@ -61,6 +66,7 @@ export default function Home() {
         width={900}
         height={500}
         unoptimized
+        priority
       />
       <p className="text-center text-gray-600 mb-8">
         Test how well you know the United States. Speak as many matching state names as you can in 4 minutes!
@@ -87,19 +93,20 @@ export default function Home() {
         >End</button>
       </div>
       <div className="overflow-x-auto m-6 flex justify-center">
-        <Flashcard
-          startCards={start}
-          disabled={stop}
-          timeLeft={timeLeft}
-          onGameOver={(score, time) => {
-            setFinalScore(score)
-            setFinalTime(time)
-
-            if (isTopTen(score, time)) {
-              setShowNameInput(true)
-            }
-          }}
-        />
+        {hydrated && (
+          <Flashcard
+            startCards={start}
+            disabled={stop}
+            timeLeft={timeLeft}
+            onGameOver={(score, time) => {
+              setFinalScore(score);
+              setFinalTime(time);
+              if (isTopTen(score, time)) {
+                setShowNameInput(true);
+              }
+            }}
+          />
+        )}
       </div>
 
       {showNameInput && (
@@ -125,9 +132,9 @@ export default function Home() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/JSON' },
                 body: JSON.stringify({
-                  UserName: { playerName },
-                  Score: { finalScore },
-                  Timer: { finalTime },
+                  UserName: playerName,
+                  Score: finalScore,
+                  Timer: finalTime,
                 }),
               }).then(() => {
                 setShowNameInput(false) // hide the input again
