@@ -10,6 +10,11 @@ A voice-controlled web game that tests your knowledge of all 50 U.S. states in a
 
 ---
 
+## 🖼 Live Demo
+
+<img width="572" height="418" alt="states-game" src="https://github.com/user-attachments/assets/378fabe2-f946-4989-a282-5081cb28e47d" />
+
+---
 ## 🧠 How It Works
 
 1. Press **Start** to begin a 4-minute timer.
