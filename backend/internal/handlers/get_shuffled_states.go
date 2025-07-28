@@ -27,5 +27,8 @@ func GetShuffledStates(w http.ResponseWriter, r *http.Request) {
 	})
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(shuffled)
+	if err := json.NewEncoder(w).Encode(shuffled); err != nil {
+		http.Error(w, "Failed to encode shuffled states", http.StatusInternalServerError)
+		return
+	}
 }
