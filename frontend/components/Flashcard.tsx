@@ -50,6 +50,11 @@ export default function Flashcard({ startCards = false, disabled = false, timeLe
 
     const nextCard = () => {
         console.log("📦 nextCard called at index", index);
+        if (index + 1 >= shuffledStates.length) {
+            console.log("🏁 All cards shown — triggering game over");
+            setGameOver(true);
+            onGameOver(score, 240 - timeLeft);
+        }
         if (index + 1 < shuffledStates.length) {
             console.log("➡️ Advancing to next card");
             setIndex(prev => prev + 1);
@@ -106,6 +111,27 @@ export default function Flashcard({ startCards = false, disabled = false, timeLe
         }
     }, [timeLeft, gameOver]);
 
+    useEffect(() => {
+        if (timeLeft <= 0 && !gameOver) {
+            console.log("⌛ Time ran out — triggering game over");
+            setGameOver(true);
+            onGameOver(score, 240);
+        }
+    }, [timeLeft, gameOver]);
+
+    useEffect(() => {
+        if (timeLeft <= 0 && !gameOver) {
+            setGameOver(true);
+            onGameOver(score, 240); // triggers end screen
+        }
+    }, [timeLeft, gameOver]);
+
+    useEffect(() => {
+        if (disabled && !gameOver) {
+            setGameOver(true);
+            onGameOver(score, 240 - timeLeft);
+        }
+    }, [disabled, gameOver]);
 
     if (!startCards || disabled) return null;
 
