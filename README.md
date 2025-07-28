@@ -6,6 +6,7 @@
 
 My project for the Boot.Dev 2025 Hackathon.
 A voice-controlled web game that tests your knowledge of all 50 U.S. states in a fast-paced flashcard-style challenge. You have 4 minutes to name as many states as you can — using only your voice!
+I did use AI to help with many parts of this, especially on the front-end. It was useful for some things like finding errors quickly, but also made bigger messes in other areas. All in all I managed to get it working just before the deadline and will later come back to clean the code up.
 
 ![Game Banner](public/us-flag.gif)
 
