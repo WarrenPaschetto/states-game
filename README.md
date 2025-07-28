@@ -91,7 +91,6 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
 1. Create `.env` in `/backend`:
    ```env
    DATABASE_URL=postgresql://...    # Your Supabase connection string
-   JWT_SECRET=supersecretvalue
    PORT=8080
    ```
 2. Install the Goose CLI for managing migrations:
