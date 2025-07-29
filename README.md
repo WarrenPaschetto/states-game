@@ -17,7 +17,7 @@ A voice-controlled web game that tests your knowledge of all 50 U.S. states in a
 
 👉 [**Click here to view the live demo**](https://states-game.vercel.app/))
 
-<img width="572" height="418" alt="states-game" src="https://github.com/user-attachments/assets/378fabe2-f946-4989-a282-5081cb28e47d" />
+[![states-game](https://github.com/user-attachments/assets/378fabe2-f946-4989-a282-5081cb28e47d)](https://states-game.vercel.app/)
 
 ---
 ## 🧠 How It Works
